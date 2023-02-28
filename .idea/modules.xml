@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/assign4-starter.iml" filepath="$PROJECT_DIR$/assign4-starter.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NLP-CKYParser.iml" filepath="$PROJECT_DIR$/NLP-CKYParser.iml" />
     </modules>
   </component>
 </project>

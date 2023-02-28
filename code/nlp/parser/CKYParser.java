@@ -45,7 +45,13 @@ public class CKYParser {
                     binaryMap.add(gr);
                 }
             }
-            
+
+            /* Start writing your parsing method. Create a new CKY table (two dimensions) and fill in the
+            diagonals based on the lexical components. I would suggest writing a method that adds
+            a constituent to your table (either in your entry class or as a standalone method). Print out
+            the added constituents (either as they’re added or by printing out the table) and make sure
+            everything is added appropriately. You can compare against your hand-written example(s).
+             */
             reader = new BufferedReader(new FileReader(inputText));
             int tableIndex = 0;
             while ((line = reader.readLine()) != null) {
