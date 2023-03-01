@@ -10,4 +10,10 @@ public class EntryInfo {
         this.ref1 = ref1;
         this.ref2 = ref2;
     }
+
+    public EntryInfo (Double weight, Reference ref1) {
+        this.weight = weight;
+        this.ref1 = ref1;
+        this.ref2 = null;
+    }
 }
