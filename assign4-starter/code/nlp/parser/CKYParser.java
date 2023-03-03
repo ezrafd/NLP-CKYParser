@@ -72,20 +72,23 @@ public class CKYParser {
                 addFirstDiagonal(splitLine, table);
 
                 // fill in the upper triangle of the table
-                for (int j = 0; j < splitLine.length; j++) {
-                    for (int i = j; i >= 0; i--) {
-                        for (int k = i; k <= j; k++) {
+                for (int j = 1; j < splitLine.length; j++) {
+                    System.out.println("j"+j);
+                    for (int i = j-1; i >= 0; i--) {
+                        System.out.println("i"+i);
+                        for (int k = i+1; k <= j; k++) {
+                            System.out.println("k"+k);
 
                             for (GrammarRule rule : binaryMap) {
                                 String rhs1 = rule.getRhs().get(0);
                                 String rhs2 = rule.getRhs().get(1);
-                                if (table.get(i).get(k).containsKey(rhs1) && table.get(k).get(j).containsKey(rhs2)) {
+                                if (table.get(i).get(k-1).containsKey(rhs1) && table.get(k).get(j).containsKey(rhs2)) {
                                     System.out.println("True");
                                     Reference ref1 = new Reference(rhs1, i, k);
                                     Reference ref2 = new Reference(rhs2, k, j);
                                     double newWeight = rule.getWeight()
-                                            + table.get(i).get(k).get(rhs1).getWeight()
-                                            + table.get(i).get(k).get(rhs2).getWeight();
+                                            + table.get(i).get(k-1).get(rhs1).getWeight()
+                                            + table.get(k).get(j).get(rhs2).getWeight();
                                     EntryInfo ei = new EntryInfo(newWeight, ref1, ref2);
 
                                     // Put the constituent in the cell at (i, j)
