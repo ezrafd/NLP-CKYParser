@@ -26,4 +26,21 @@ public class Reference {
         this.cons = cons;
         is_lexical = true;
     }
+
+    public int getI() {
+        return i;
+    }
+
+    public int getJ() {
+        return j;
+    }
+
+    public String getCons() {
+        return cons;
+    }
+
+    @Override
+    public String toString() {
+        return cons;
+    }
 }

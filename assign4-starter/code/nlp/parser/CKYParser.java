@@ -66,34 +66,38 @@ public class CKYParser {
             while ((line = reader.readLine()) != null) {
                 String[] splitLine = line.split("\\s+");
                 table = new ArrayList<>(splitLine.length);
-                for (int i = 0; i < splitLine.length; i++) {
-                    table.add(new ArrayList<>(splitLine.length));
-                    System.out.println(1);
-                    System.out.println("i" + i);
-                    System.out.println(table);
-                    for (int x = 0; x < i; x++) {
-                        table.get(i).add(x, null);
-                    }
-                    for (int j = i; j < splitLine.length; j++) {
-                        System.out.println(2);
-                        System.out.println("j" + j);
-                        table.get(i).add(j, new HashMap<>());
-                    }
-                }
+                populateTable(splitLine, table);
+
                 System.out.println(table.get(0));
-                int k = 0;
-                while (k < splitLine.length) {
-                    ArrayList<GrammarRule> lexList = lexicalMap.get(splitLine[k]);
-                    for (GrammarRule gr : lexList) {
+                addFirstDiagonal(splitLine, table);
 
-                        Reference wordRef = new Reference(gr.getRhs().get(0));
-                        EntryInfo ei = new EntryInfo(gr.getWeight(), wordRef);
+                // fill in the upper triangle of the table
+                for (int j = 0; j < splitLine.length; j++) {
+                    for (int i = j; i >= 0; i--) {
+                        for (int k = i; k <= j; k++) {
 
-                        // Put the constituent in the cell at (k, k)
-                        table.get(k).get(k).put(gr.getLhs(), ei);
+                            for (GrammarRule rule : binaryMap) {
+                                String rhs1 = rule.getRhs().get(0);
+                                String rhs2 = rule.getRhs().get(1);
+                                if (table.get(i).get(k).containsKey(rhs1) && table.get(k).get(j).containsKey(rhs2)) {
+                                    System.out.println("True");
+                                    Reference ref1 = new Reference(rhs1, i, k);
+                                    Reference ref2 = new Reference(rhs2, k, j);
+                                    double newWeight = rule.getWeight()
+                                            + table.get(i).get(k).get(rhs1).getWeight()
+                                            + table.get(i).get(k).get(rhs2).getWeight();
+                                    EntryInfo ei = new EntryInfo(newWeight, ref1, ref2);
+
+                                    // Put the constituent in the cell at (i, j)
+                                    table.get(i).get(j).put(rule.getLhs(), ei);
+                                }
+                            }
+                        }
                     }
-                    k++;
                 }
+
+
+
                 tableList.add(table);
                 System.out.println(table);
             }
@@ -102,6 +106,50 @@ public class CKYParser {
             reader.close();
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void populateTable(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
+        for (int i = 0; i < splitLine.length; i++) {
+            table.add(new ArrayList<>(splitLine.length));
+            for (int x = 0; x < i; x++) {
+                table.get(i).add(x, null);
+            }
+            for (int j = i; j < splitLine.length; j++) {
+                table.get(i).add(j, new HashMap<>());
+            }
+        }
+
+    }
+
+    public void addFirstDiagonal(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
+        int k = 0;
+        while (k < splitLine.length) {
+            System.out.println(splitLine[k]);
+            ArrayList<GrammarRule> lexList = lexicalMap.get(splitLine[k]);
+            System.out.println(lexList);
+            // Needs fixing, shouldn't be words that aren't in the grammar?
+            if (lexList != null) {
+                for (GrammarRule gr : lexList) {
+
+                    Reference wordRef = new Reference(gr.getRhs().get(0));
+                    EntryInfo ei = new EntryInfo(gr.getWeight(), wordRef);
+
+                    if (unaryMap.containsKey(gr.getLhs())) {
+                        Reference unaryRuleRef = new Reference(wordRef.getCons(), wordRef.getI(), wordRef.getJ());
+                        double newWeight;
+                        for (GrammarRule rule : unaryMap.get(gr.getLhs())) {
+                            newWeight = rule.getWeight() + ei.getWeight();
+                            EntryInfo unaryInfo = new EntryInfo(newWeight, unaryRuleRef);
+                            table.get(k).get(k).put(rule.getLhs(), unaryInfo);
+                        }
+                    }
+
+                    // Put the constituent in the cell at (k, k)
+                    table.get(k).get(k).put(gr.getLhs(), ei);
+                }
+            }
+            k++;
         }
     }
 

@@ -16,4 +16,13 @@ public class EntryInfo {
         this.ref1 = ref1;
         this.ref2 = null;
     }
+
+    public double getWeight() {
+        return weight;
+    }
+
+    @Override
+    public String toString() {
+        return ("[weight: " + weight + " ref1: " + ref1 + " ref2: " + ref2 +"]");
+    }
 }
