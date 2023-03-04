@@ -67,11 +67,11 @@ public class CKYParser {
                 String[] splitLine = line.split("\\s+");
                 table = new ArrayList<>(splitLine.length);
                 populateTable(splitLine, table);
-                addFirstDiagonal(splitLine, table);
-                addUpperTriangle(splitLine, table);
-
-                tableList.add(table);
-                System.out.println(table);
+                if (addFirstDiagonal(splitLine, table)) {
+                    addUpperTriangle(splitLine, table);
+                    tableList.add(table);
+                    System.out.println(table);
+                }
             }
 
             //close the reader
@@ -94,51 +94,54 @@ public class CKYParser {
 
     }
 
-    public void addFirstDiagonal(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
+    public void checkUnaryRules(GrammarRule gr, EntryInfo ei, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table, int i, int j) {
+        if (unaryMap.containsKey(gr.getLhs())) {
+            Reference unaryRuleRef = new Reference(gr.getLhs(), i, j);
+            double newWeight;
+            for (GrammarRule rule : unaryMap.get(gr.getLhs())) {
+                newWeight = rule.getWeight() + ei.getWeight();
+                EntryInfo unaryInfo = new EntryInfo(newWeight, unaryRuleRef);
+
+                // Only store the best version (based on weight) of each constituent
+                addIfBest(table, j, i, rule, newWeight, unaryInfo);
+            }
+        }
+    }
+
+    public boolean addFirstDiagonal(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
         int k = 0;
         while (k < splitLine.length) {
             System.out.println(splitLine[k]);
             ArrayList<GrammarRule> lexList = lexicalMap.get(splitLine[k]);
             System.out.println(lexList);
-            // Needs fixing, shouldn't be words that aren't in the grammar?
             if (lexList != null) {
                 for (GrammarRule gr : lexList) {
 
                     Reference wordRef = new Reference(gr.getRhs().get(0));
                     EntryInfo ei = new EntryInfo(gr.getWeight(), wordRef);
 
-                    if (unaryMap.containsKey(gr.getLhs())) {
-                        Reference unaryRuleRef = new Reference(wordRef.getCons(), wordRef.getI(), wordRef.getJ());
-                        double newWeight;
-                        for (GrammarRule rule : unaryMap.get(gr.getLhs())) {
-                            newWeight = rule.getWeight() + ei.getWeight();
-                            EntryInfo unaryInfo = new EntryInfo(newWeight, unaryRuleRef);
-                            table.get(k).get(k).put(rule.getLhs(), unaryInfo);
-                        }
-                    }
+                    checkUnaryRules(gr, ei, table, k, k);
 
-                    // Put the constituent in the cell at (k, k)
-                    table.get(k).get(k).put(gr.getLhs(), ei);
+                    // Only store the best version (based on weight) of each constituent
+                    addIfBest(table, k, k, gr, gr.getWeight(), ei);
                 }
+            } else {
+                return false;
             }
             k++;
         }
+        return true;
     }
 
     public void addUpperTriangle(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
         // fill in the upper triangle of the table
         for (int j = 1; j < splitLine.length; j++) {
-            System.out.println("j"+j);
             for (int i = j-1; i >= 0; i--) {
-                System.out.println("i"+i);
                 for (int k = i+1; k <= j; k++) {
-                    System.out.println("k"+k);
-
                     for (GrammarRule rule : binaryMap) {
                         String rhs1 = rule.getRhs().get(0);
                         String rhs2 = rule.getRhs().get(1);
                         if (table.get(i).get(k-1).containsKey(rhs1) && table.get(k).get(j).containsKey(rhs2)) {
-                            System.out.println("True");
                             Reference ref1 = new Reference(rhs1, i, k);
                             Reference ref2 = new Reference(rhs2, k, j);
                             double newWeight = rule.getWeight()
@@ -146,8 +149,11 @@ public class CKYParser {
                                     + table.get(k).get(j).get(rhs2).getWeight();
                             EntryInfo ei = new EntryInfo(newWeight, ref1, ref2);
 
-                            // Put the constituent in the cell at (i, j)
-                            table.get(i).get(j).put(rule.getLhs(), ei);
+                            checkUnaryRules(rule, ei, table, i, j);
+
+                            // Only store the best version (based on weight) of each constituent
+                            addIfBest(table, j, i, rule, newWeight, ei);
+
                         }
                     }
                 }
@@ -155,7 +161,17 @@ public class CKYParser {
         }
     }
 
-    public void addConstituent(){};
+    private void addIfBest(ArrayList<ArrayList<HashMap<String, EntryInfo>>> table, int j, int i, GrammarRule rule, double newWeight, EntryInfo ei) {
+        if (table.get(i).get(j).containsKey(rule.getLhs())) {
+            if (table.get(i).get(j).get(rule.getLhs()).getWeight() < newWeight) {
+                // Put the constituent in the cell at (i, j)
+                table.get(i).get(j).put(rule.getLhs(), ei);
+            }
+        } else {
+            // Put the constituent in the cell at (i, j)
+            table.get(i).get(j).put(rule.getLhs(), ei);
+        }
+    }
 
     public static void main (String args[]) {
         String rulesFile = "/Users/ezraford/Desktop/School/CS 159/NLP-CKYParser/assign4-starter/data/example.pcfg";
