@@ -39,6 +39,10 @@ public class Reference {
         return cons;
     }
 
+    public boolean isLexical() {
+        return is_lexical;
+    }
+
     @Override
     public String toString() {
         return cons;

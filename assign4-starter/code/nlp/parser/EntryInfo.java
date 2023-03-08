@@ -21,6 +21,14 @@ public class EntryInfo {
         return weight;
     }
 
+    public Reference getRef1() {
+        return ref1;
+    }
+
+    public Reference getRef2() {
+        return ref2;
+    }
+
     @Override
     public String toString() {
         return ("[weight: " + weight + " ref1: " + ref1 + " ref2: " + ref2 +"]");

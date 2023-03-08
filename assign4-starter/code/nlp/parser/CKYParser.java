@@ -49,6 +49,9 @@ public class CKYParser {
         }
 
         parseFile(inputText);
+
+        System.out.println("Parse trees:");
+        printParses();
     }
 
     public void parseFile(String inputText) {
@@ -120,6 +123,7 @@ public class CKYParser {
                     Reference wordRef = new Reference(gr.getRhs().get(0));
                     EntryInfo ei = new EntryInfo(gr.getWeight(), wordRef);
 
+                    // check if the lhs of the new rule corresponds to rhs of any unary rule
                     checkUnaryRules(gr, ei, table, k, k);
 
                     // Only store the best version (based on weight) of each constituent
@@ -135,13 +139,20 @@ public class CKYParser {
 
     public void addUpperTriangle(String[] splitLine, ArrayList<ArrayList<HashMap<String, EntryInfo>>> table) {
         // fill in the upper triangle of the table
+
+        // j corresponds to the second level of the 2D array
         for (int j = 1; j < splitLine.length; j++) {
+            // i corresponds to the first level of the 2D array
             for (int i = j-1; i >= 0; i--) {
                 for (int k = i+1; k <= j; k++) {
                     for (GrammarRule rule : binaryMap) {
+                        // iterate through all of the binary rules and see if any of the rules match, that is RHS1 is
+                        // in entry1 and RHS2 is in entry2
                         String rhs1 = rule.getRhs().get(0);
                         String rhs2 = rule.getRhs().get(1);
+
                         if (table.get(i).get(k-1).containsKey(rhs1) && table.get(k).get(j).containsKey(rhs2)) {
+                            //if the entries match the binary rule, add the rule to the cell
                             Reference ref1 = new Reference(rhs1, i, k);
                             Reference ref2 = new Reference(rhs2, k, j);
                             double newWeight = rule.getWeight()
@@ -149,6 +160,7 @@ public class CKYParser {
                                     + table.get(k).get(j).get(rhs2).getWeight();
                             EntryInfo ei = new EntryInfo(newWeight, ref1, ref2);
 
+                            // check if the lhs of the new rule corresponds to rhs of any unary rule
                             checkUnaryRules(rule, ei, table, i, j);
 
                             // Only store the best version (based on weight) of each constituent
@@ -170,6 +182,40 @@ public class CKYParser {
         } else {
             // Put the constituent in the cell at (i, j)
             table.get(i).get(j).put(rule.getLhs(), ei);
+        }
+    }
+
+    public void printParses() {
+        for (ArrayList<ArrayList<HashMap<String, EntryInfo>>> table : tableList) {
+            String parseString = "";
+            int j = table.get(0).size()-1;
+
+            addEntry(table, 0, j, "S", parseString);
+
+            System.out.println(parseString);
+        }
+    }
+
+    public void addEntry(ArrayList<ArrayList<HashMap<String, EntryInfo>>> table, int i, int j, String constituent, String parseString) {
+        EntryInfo entry = table.get(i).get(j).get(constituent);
+
+        Reference ref1 = entry.getRef1();
+        Reference ref2 = entry.getRef2();
+
+        if (ref1.isLexical()) {
+            parseString += " " + ref1.getCons() + ")";
+        } else {
+            parseString += "(" + ref1.getCons() + " ";
+
+            addEntry(table, ref1.getI(), ref1.getJ(), ref1.getCons(), parseString);
+        }
+
+        if (ref2.isLexical()) {
+            parseString += " " + ref2.getCons() + ")";
+        } else if (ref2 != null) {
+            parseString += "(" + ref2.getCons() + " ";
+
+            addEntry(table, ref2.getI(), ref2.getJ(), ref2.getCons(), parseString);
         }
     }
 
