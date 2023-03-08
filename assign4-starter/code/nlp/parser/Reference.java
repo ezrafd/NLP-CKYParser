@@ -45,6 +45,6 @@ public class Reference {
 
     @Override
     public String toString() {
-        return cons;
+        return cons + " (" + i + ", " + j + ")";
     }
 }
