@@ -5,7 +5,6 @@ package nlp.parser;
  * that it came from as two Reference objects ref1 and ref2.
  */
 
-
 public class EntryInfo {
     protected double weight; //the constituent's weight
     protected Reference ref1; //reference to previous constituent

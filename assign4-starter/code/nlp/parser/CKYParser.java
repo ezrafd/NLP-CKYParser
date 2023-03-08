@@ -72,9 +72,7 @@ public class CKYParser {
     public void parseFile(String inputText) {
         /* Start writing your parsing method. Create a new CKY table (two dimensions) and fill in the
             diagonals based on the lexical components. I would suggest writing a method that adds
-            a constituent to your table (either in your entry class or as a standalone method). Print out
-            the added constituents (either as they’re added or by printing out the table) and make sure
-            everything is added appropriately. You can compare against your hand-written example(s).
+            a constituent to your table (either in your entry class or as a standalone method).
              */
         try {
 
@@ -314,7 +312,7 @@ public class CKYParser {
     public static void main (String args[]) {
         String rulesFile = "/Users/ezraford/Desktop/School/CS 159/NLP-CKYParser/assign4-starter/data/full.pcfg";
         String inputFile = "/Users/ezraford/Desktop/School/CS 159/NLP-CKYParser/assign4-starter/data/test.sentences";
-        String outputFile = "/Users/ezraford/Desktop/School/CS 159/NLP-CKYParser/assign4-starter/data/test.sentences.parsed";
+        //String outputFile = "/Users/ezraford/Desktop/School/CS 159/NLP-CKYParser/assign4-starter/data/test.sentences.parsed";
 
         CKYParser ckyParser = new CKYParser(rulesFile, inputFile);
     }
